@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>香港巧固球 · 數據收集</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Helvetica Neue', 'PingFang HK', 'Noto Sans HK', sans-serif;
+            background: #f5f7fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 16px 12px 30px;
+            color: #1e2b3c;
+        }
+
+        /* iPad 大尺寸卡片容器 */
+        .app-container {
+            max-width: 1100px;
+            width: 100%;
+            background: white;
+            border-radius: 36px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 6px 12px rgba(0, 20, 30, 0.08);
+            padding: 24px 24px 32px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(220, 230, 245, 0.6);
+        }
+
+        /* 標題列 + 比賽控制 */
+        .header-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .title-section h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #0b2b3c;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-section h1 span {
+            background: #1e4f6b;
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 4px 14px;
+            border-radius: 100px;
+            margin-left: 8px;
+        }
+
+        .match-panel {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            background: #eef2f8;
+            padding: 8px 16px 8px 24px;
+            border-radius: 60px;
+        }
+
+        .timer-box {
+            font-size: 28px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            background: #1e2b3c;
+            color: white;
+            padding: 10px 22px;
+            border-radius: 48px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1), 0 6px 10px rgba(0,0,0,0.05);
+            letter-spacing: 1px;
+        }
+
+        .btn {
+            background: white;
+            border: none;
+            font-weight: 600;
+            font-size: 18px;
+            padding: 12px 22px;
+            border-radius: 48px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+            color: #1e4f6b;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid #cddae6;
+            backdrop-filter: blur(4px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            touch-action: manipulation;
+        }
+
+        .btn-primary {
+            background: #1e4f6b;
+            color: white;
+            border: none;
+            box-shadow: 0 8px 14px rgba(26, 79, 107, 0.2);
+        }
+
+        .btn-primary:active {
+            background: #123b50;
+            transform: scale(0.97);
+        }
+
+        .btn-outline:active {
+            background: #e0e8f0;
+        }
+
+        .btn-icon {
+            padding: 12px 18px;
+            font-size: 22px;
+        }
+
+        /* 工具列 — 換人、重置 */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .toolbar .btn {
+            padding: 10px 22px;
+            font-size: 17px;
+        }
+
+        .team-selector {
+            margin-left: auto;
+            display: flex;
+            background: #e9eef4;
+            border-radius: 40px;
+            padding: 4px;
+        }
+
+        .team-chip {
+            padding: 10px 24px;
+            border-radius: 36px;
+            font-weight: 600;
+            font-size: 18px;
+            background: transparent;
+            color: #385e74;
+            border: none;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .team-chip.active {
+            background: white;
+            color: #1e4f6b;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 數據表格區塊 (球員卡列表) */
+        .players-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0 8px;
+        }
+
+        .player-row {
+            background: #ffffff;
+            border-radius: 30px;
+            padding: 8px 12px 8px 18px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px 8px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #dee7ef;
+            transition: all 0.1s;
+        }
+
+        .player-identity {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 160px;
+            flex: 1.2;
+        }
+
+        .jersey-number {
+            width: 48px;
+            height: 48px;
+            background: #0b2b3c;
+            color: white;
+            font-weight: 700;
+            font-size: 22px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .player-name {
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: -0.3px;
+            color: #1a3d52;
+        }
+
+        /* 上場時間標籤 */
+        .time-tag {
+            background: #eef4fa;
+            border-radius: 36px;
+            padding: 4px 12px 4px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            color: #1e4f6b;
+        }
+
+        .timer-icon {
+            font-size: 18px;
+        }
+
+        .playtime-value {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            min-width: 55px;
+            text-align: right;
+        }
+
+        /* 統計數字按鈕區 (平鋪) */
+        .stats-panel {
+            display: flex;
+            flex: 3;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 7px 10px;
+            justify-content: flex-end;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 64px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #5e7e94;
+            letter-spacing: -0.2px;
+            margin-bottom: 3px;
+        }
+
+        .stat-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f6f9fc;
+            padding: 5px 10px;
+            border-radius: 40px;
+            border: 1px solid #d2e0eb;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            min-width: 42px;
+            text-align: center;
+            color: #1e3b4f;
+        }
+
+        .stat-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 40px;
+            background: white;
+            border: 1px solid #bccfdf;
+            font-size: 26px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e4f6b;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.1s;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .stat-btn:active {
+            background: #d3e2f0;
+            transform: scale(0.94);
+            border-color: #9bb7ce;
+        }
+
+        .stat-btn.minus {
+            font-size: 30px;
+            line-height: 1;
+        }
+
+        /* 自身失誤特別色 */
+        .stat-item.turnover .stat-control {
+            border-color: #f3cfcf;
+            background: #fff8f8;
+        }
+        .stat-item.turnover .stat-value {
+            color: #b13e3e;
+        }
+
+        /* 控球時間較特殊，改為大單位 */
+        .possession-control {
+            min-width: 110px;
+        }
+
+        /* 空狀態 */
+        .placeholder-note {
+            padding: 40px;
+            text-align: center;
+            color: #7895a8;
+            font-size: 18px;
+            background: #fafdff;
+            border-radius: 40px;
+            border: 1px dashed #b8cfE3;
+        }
+
+        .footer-note {
+            margin-top: 28px;
+            display: flex;
+            justify-content: flex-end;
+            font-size: 16px;
+            color: #57758b;
+        }
+
+        /* 響應式微調 */
+        @media (max-width: 800px) {
+            .app-container {
+                padding: 20px 16px;
+            }
+            .player-row {
+                padding: 16px;
+            }
+            .stats-panel {
+                justify-content: flex-start;
+                margin-top: 6px;
+            }
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    
+    <!-- 頂部：標題 + 計時/比賽控制 -->
+    <div class="header-row">
+        <div class="title-section">
+            <h1>
+                🏐 香港巧固球 
+                <span>數據記錄</span>
+            </h1>
+        </div>
+        <div class="match-panel">
+            <div class="timer-box" id="globalTimerDisplay">00:00</div>
+            <button class="btn btn-primary" id="playPauseBtn" style="min-width: 100px;">▶ 開始</button>
+            <button class="btn btn-outline" id="resetTimerBtn">↻ 重置</button>
+        </div>
+    </div>
+
+    <!-- 第二列：快速換人 + 隊伍切換（單純UI展示，實戰用） -->
+    <div class="toolbar">
+        <button class="btn btn-outline" id="substitutionBtn" title="記錄換人（上場時間重置）">🔄 換人記錄</button>
+        <button class="btn btn-outline" id="newHalfBtn">⏱️ 半場/節重置</button>
+        <div class="team-selector">
+            <button class="team-chip active" data-team="hk">香港隊</button>
+            <button class="team-chip" data-team="opp">對手</button>
+        </div>
+        <span style="margin-left: auto; font-size: 15px; color: #4a6f85;">點擊 +/- 記錄即時數據</span>
+    </div>
+
+    <!-- 球員數據卡片區域 -->
+    <div id="playersContainer" class="players-grid">
+        <!-- 動態渲染 JavaScript 生成 -->
+    </div>
+
+    <!-- 底部輔助說明 -->
+    <div class="footer-note">
+        <span>📋 點擊數字可直接編輯? (按住iPad可快速增減)  — 長傳轉邊 / 短配球</span>
+    </div>
+</div>
+
+<script>
+    (function(){
+        "use strict";
+
+        // ---------- 全域比賽計時器 ----------
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isRunning = false;
+        const timerDisplay = document.getElementById('globalTimerDisplay');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+
+        function formatTime(sec) {
+            const mins = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            return `${mins.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            timerDisplay.textContent = formatTime(timerSeconds);
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            isRunning = true;
+            playPauseBtn.textContent = '⏸︎ 暫停';
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            isRunning = false;
+            playPauseBtn.textContent = '▶ 開始';
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerSeconds = 0;
+            updateTimerDisplay();
+        }
+
+        playPauseBtn.addEventListener('click', function() {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        });
+
+        document.getElementById('resetTimerBtn').addEventListener('click', function() {
+            resetTimer();
+        });
+
+        // ---------- 球員數據結構 ----------
+        // 香港巧固球常用球員 (示範用)
+        const initialPlayers = [
+            { id: 'p1', number: 7, name: '陳大文', playTime: 0, possession: 0, shots: 0, goals: 0, successfulDef: 0, shortPass: 0, longPass: 0, turnovers: 0 },
+            { id: 'p2', number: 12, name: '李振邦', playTime: 0, possession: 0, shots: 0, goals: 0, successfulDef: 0, shortPass: 0, longPass: 0, turnovers: 0 },
+            { id: 'p3', number: 23, name: '張志豪', playTime: 0, possession: 0, shots: 0, goals: 0, successfulDef: 0, shortPass: 0, longPass: 0, turnovers: 0 },
+            { id: 'p4', number: 31, name: '黃俊傑', playTime: 0, possession: 0, shots: 0, goals: 0, successfulDef: 0, shortPass: 0, longPass: 0, turnovers: 0 },
+            { id: 'p5', number: 9, name: '劉家輝', playTime: 0, possession: 0, shots: 0, goals: 0, successfulDef: 0, shortPass: 0, longPass: 0, turnovers: 0 },
+        ];
+
+        let players = JSON.parse(JSON.stringify(initialPlayers)); // 深拷貝
+
+        // 當前活躍的隊伍 (但主要展示香港隊)
+        let activeTeam = 'hk'; // 'hk' or 'opp'
+
+        // 取得容器
+        const container = document.getElementById('playersContainer');
+
+        // 渲染全部球員卡片
+        function renderPlayers() {
+            if (!players.length) {
+                container.innerHTML = `<div class="placeholder-note">🏐 尚無球員資料，請新增球員</div>`;
+                return;
+            }
+
+            let html = '';
+            players.forEach((player, index) => {
+                html += `
+                <div class="player-row" data-player-id="${player.id}" data-index="${index}">
+                    <div class="player-identity">
+                        <div class="jersey-number">${player.number}</div>
+                        <div class="player-name">${player.name}</div>
+                        <div class="time-tag">
+                            <span class="timer-icon">⏱️</span>
+                            <span class="playtime-value" id="playtime-${player.id}">${formatTime(player.playTime)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-panel">
+                        <!-- 控球時間 (秒) -->
+                        <div class="stat-item possession-control">
+                            <div class="stat-label">控球時間</div>
+                            <div class="stat-control">
+                                <button class="stat-btn minus" data-action="decrement" data-player="${player.id}" data-field="possession">−</button>
+                                <span class="stat-value" id="possession-${player.id}">${player.possession}</span>
+                                <button class="stat-btn" data-action="increment" data-player="${player.id}" data-field="possession">+</button>
+                            </div>
+                        </div>
+                        <!-- 射球次數 -->
+                        <div class="stat-item">
+                            <div class="stat-label">射球</div>
+                            <div class="stat-control">
+                                <button class="stat-btn minus" data-action="decrement" data-player="${player.id}" data-field="shots">−</button>
+                                <span class="stat-value" id="shots-${player.id}">${player.shots}</span>
+                                <button class="stat-btn" data-action="increment" data-player="${player.id}" data-field="shots">+</button>
+                            </div>
+                        </div>
+                        <!-- 得分次數 -->
+                        <div class="stat-item">
+                            <div class="stat-label">得分</div>
+                            <div class="stat-control">
+                                <button class="stat-btn minus" data-action="decrement" data-player="${player.id}" data-field="goals">−</button>
+                                <span class="stat-value" id="goals-${player.id}">${player.goals}</span>
+                                <button class="stat-btn" data-action="increment" data-player="${player.id}" data-field="goals">+</button>
+                            </div>
+                        </div>
+                        <!-- 成功防守 -->
+                        <div class="stat-item">
+                            <div class="stat-label">防守成功</div>
+                            <div class="stat-control">
+                                <button class="stat-btn minus" data-action="decrement" data-player="${player.id}" data-field="successfulDef">−</button>
+                                <span class="stat-value" id="successfulDef-${player.id}">${player.successfulDef}</span>
+                                <button class="stat-btn" data-action="increment" data-player="${player.id}" data-field="successfulDef">+</button>
+                            </div>
+                        </div>
+                        <!-- 短配球 -->
+                        <div class="stat-item">
+                            <div class="stat-label">短配球</div>
+                            <div class="stat-control">
+                                <button class="stat-btn minus" data-action="decrement" data-player="${player.id}" data-field="shortPass">−</button>
+                                <span class="stat-value" id="shortPass-${player.id}">${player.shortPass}</span>
+                                <button class="stat-btn" data-action="increment" data-player="${player.id}" data-field="shortPass">+</button>
+                            </div>
+                        </div>
+                        <!-- 長傳轉邊 -->
+                        <div class="stat-item">
+                            <div class="stat-label">長傳轉邊</div>
+                            <div class="stat-control">
+                                <button class="stat-btn minus" data-action="decrement" data-player="${player.id}" data-field="longPass">−</button>
+                                <span class="stat-value" id="longPass-${player.id}">${player.longPass}</span>
+                                <button class="stat-btn" data-action="increment" data-player="${player.id}" data-field="longPass">+</button>
+                            </div>
+                        </div>
+                        <!-- 自身失誤 -->
+                        <div class="stat-item turnover">
+                            <div class="stat-label">失誤</div>
+                            <div class="stat-control">
+                                <button class="stat-btn minus" data-action="decrement" data-player="${player.id}" data-field="turnovers">−</button>
+                                <span class="stat-value" id="turnovers-${player.id}">${player.turnovers}</span>
+                                <button class="stat-btn" data-action="increment" data-player="${player.id}" data-field="turnovers">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 更新單一球員數值顯示
+        function updatePlayerStatDisplay(playerId) {
+            const player = players.find(p => p.id === playerId);
+            if (!player) return;
+
+            const fields = ['possession', 'shots', 'goals', 'successfulDef', 'shortPass', 'longPass', 'turnovers', 'playTime'];
+            fields.forEach(field => {
+                const elem = document.getElementById(`${field}-${playerId}`);
+                if (elem) {
+                    if (field === 'playTime') {
+                        elem.textContent = formatTime(player.playTime);
+                    } else {
+                        elem.textContent = player[field];
+                    }
+                }
+            });
+        }
+
+        // 全局修改數據函數
+        function modifyStat(playerId, field, delta) {
+            const player = players.find(p => p.id === playerId);
+            if (!player) return;
+
+            // 確保數值不小於0
+            const current = player[field] || 0;
+            let newVal = current + delta;
+            if (newVal < 0) newVal = 0;
+            player[field] = newVal;
+
+            // 如果是上場時間 (特殊邏輯，我們額外提供紀錄)
+            if (field === 'playTime') {
+                // 但一般playTime是透過計時累加, 但我們允許手動+/- 以應對特殊情況
+                player.playTime = Math.max(0, newVal);
+            }
+
+            updatePlayerStatDisplay(playerId);
+        }
+
+        // 事件委派：處理所有增減按鈕
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('.stat-btn');
+            if (!btn) return;
+            
+            const action = btn.dataset.action;
+            const playerId = btn.dataset.player;
+            const field = btn.dataset.field;
+            
+            if (!playerId || !field) return;
+            
+            const delta = (action === 'increment') ? 1 : -1;
+            modifyStat(playerId, field, delta);
+        });
+
+        // --- 增加上場時間功能：換人記錄 (重置特定球員上場時間，或是我們也可以增加換人邏輯) ---
+        function resetPlayerPlaytime(playerId) {
+            const player = players.find(p => p.id === playerId);
+            if (player) {
+                player.playTime = 0;
+                updatePlayerStatDisplay(playerId);
+            }
+        }
+
+        // 換人按鈕：簡單示範 —— 跳出選擇哪個球員換人（重置上場時間）
+        document.getElementById('substitutionBtn').addEventListener('click', () => {
+            // 實際使用可彈出選單，這裡為簡潔：重置第一位球員上場時間做範例，並提示
+            if (players.length > 0) {
+                const msg = `換人: 將 "${players[0].name}" 上場時間歸零 (可持續記錄)`;
+                resetPlayerPlaytime(players[0].id);
+                alert(`✅ ${msg}`);
+            } else {
+                alert('沒有球員資料');
+            }
+        });
+
+        // 半場重置：可將所有球員某項歸零？這裡示範：將射球/得分等歸零(保留上場時間, 可選)
+        document.getElementById('newHalfBtn').addEventListener('click', () => {
+            if (confirm('新一節/半場：重置所有射球、得分、防守、傳球、失誤數據？ (保留上場時間與控球時間)')) {
+                players.forEach(p => {
+                    p.shots = 0;
+                    p.goals = 0;
+                    p.successfulDef = 0;
+                    p.shortPass = 0;
+                    p.longPass = 0;
+                    p.turnovers = 0;
+                    // 控球時間也重置? 按需求可保留，這裡重置較乾淨
+                    p.possession = 0;
+                });
+                // 重新渲染
+                renderPlayers();
+            }
+        });
+
+        // 隊伍切換只是UI展示，我們可只顯示香港隊（數據不變）
+        const teamChips = document.querySelectorAll('.team-chip');
+        teamChips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                teamChips.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const team = this.dataset.team;
+                activeTeam = team;
+                // 簡單提示（未來可切換不同球員表）
+                if (team === 'opp') {
+                    alert('對手數據介面 (示範模式，目前展示相同香港隊球員)');
+                }
+                // 實際不做變更，保持同樣數據，但可擴充
+            });
+        });
+
+        // 初始化渲染
+        renderPlayers();
+
+        // 可選：監聽計時器自動增加在場球員的上場時間？ 因為巧固球動態，由數據員手動記錄較準，
+        // 但可以提供一個"全體增加上場時間"按鈕，但我們可以綁定"開始"後每分鐘全體+60秒? 但容易誤差。
+        // 提供一個輔助: 每過10秒增加所有球員playTime? 不完善，我們選擇手動控制，更精確。
+        // 但我們可以加上全局「增加1分鐘上場時間」的隱藏功能? 改用增加全體功能（工具列）
+        const addMinuteBtn = document.createElement('button');
+        addMinuteBtn.className = 'btn btn-outline';
+        addMinuteBtn.textContent = '⏫ 全體+1min';
+        addMinuteBtn.style.marginLeft = '12px';
+        document.querySelector('.toolbar').appendChild(addMinuteBtn);
+        
+        addMinuteBtn.addEventListener('click', () => {
+            players.forEach(p => {
+                p.playTime = (p.playTime || 0) + 60;
+                updatePlayerStatDisplay(p.id);
+            });
+        });
+
+        // 為了更方便，添加重置計時器不影響球員數據。 已經有了。
+        // 另外如果您想記錄「控球時間」有連續累加邏輯，手動加減即可。
+        
+        // 額外: 點擊球員名字也可以編輯 (不實現複雜編輯，保持簡單)
+
+        // 處理全局鍵盤? 不用。
+
+        console.log('香港巧固球數據系統已啟動 — 適合iPad觸控');
+    })();
+</script>
+</body>
+</html>
